@@ -52,7 +52,7 @@ const reassuranceCards = [
 ];
 
 export default function CTA({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
-  const primaryHref = isAuthenticated ? '/find' : '/signup?next=%2Ffind';
+  const primaryHref = '/find';
   const secondaryHref = isAuthenticated ? '/liked' : '/login?next=%2Ffind';
   const secondaryLabel = isAuthenticated ? 'View Liked' : 'Log In';
 

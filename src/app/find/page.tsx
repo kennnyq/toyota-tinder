@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Preferences, AnalyzeResponse, UserFilter, FuelPreference, BodyStylePreference } from '@/lib/types';
 import { saveResults, saveUserFilter } from '@/lib/likes';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { AnimatePresence, motion } from 'framer-motion';
 import { deriveNoteConstraints } from '@/lib/util';
 
@@ -69,7 +68,6 @@ const FIELD_VARIANTS = {
 
 export default function FindPage() {
   const router = useRouter();
-  useRequireAuth();
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
