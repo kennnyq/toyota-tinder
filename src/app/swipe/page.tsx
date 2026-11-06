@@ -6,7 +6,6 @@ import { motion, AnimatePresence, useMotionValue, useTransform, animate, MotionP
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import SwipeCard from '@/components/SwipeCard';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useSessionId } from '@/hooks/useSessionId';
 import { createPortal } from 'react-dom';
 
@@ -17,7 +16,6 @@ const BATCH_INCREMENT = 10;
 const ENTER_TRANSITION: MotionProps['transition'] = { type: 'spring', stiffness: 240, damping: 28 };
 
 export default function SwipePage() {
-  useRequireAuth();
   const sessionId = useSessionId();
   const [cars, setCars] = useState<Car[]>([]);
   const [visibleCount, setVisibleCount] = useState(0);

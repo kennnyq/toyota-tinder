@@ -7,7 +7,6 @@ import { getLikedCars, clearLikes } from '@/lib/likes';
 import { useEffect, useMemo, useState, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Car } from '@/lib/types';
 import Image from 'next/image';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { AnimatePresence, motion } from 'framer-motion';
 
 type SortKey = 'az' | 'price-asc' | 'price-desc' | 'mpg-asc' | 'mpg-desc';
@@ -27,7 +26,6 @@ const CHILD_FADE_VARIANTS = {
 } as const;
 
 export default function LikedPage() {
-  useRequireAuth();
   const [cars, setCars] = useState<Car[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortKey>('az');

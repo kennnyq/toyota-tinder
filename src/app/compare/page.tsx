@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import NavBar from '@/components/NavBar';
 import { formatCurrency, getCategory } from '@/lib/carDisplay';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { getLikedCars } from '@/lib/likes';
 import { Car } from '@/lib/types';
 
@@ -38,7 +37,6 @@ const LIKES_STORAGE_KEY = 'toyotaTinder.likes';
 const LIKE_DETAILS_KEY = 'toyotaTinder.likeDetails';
 
 export default function ComparePage() {
-  useRequireAuth();
   const [cars, setCars] = useState<Car[]>([]);
   const [primaryId, setPrimaryId] = useState<number | null>(null);
   const [secondaryId, setSecondaryId] = useState<number | null>(null);
