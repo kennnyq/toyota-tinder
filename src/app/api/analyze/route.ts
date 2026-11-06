@@ -3,6 +3,7 @@ import { AnalyzeResponse, Car, Preferences } from '@/lib/types';
 import { filterCars, pickTopN, orderCarsForDisplay, deriveNoteConstraints, describeNoteConstraints } from '@/lib/util';
 import { GoogleGenAI } from '@google/genai';
 import { getCsvCars } from '@/data/csvCars.server';
+import { clientKeyFromRequest, tryConsumeGeminiCall } from '@/server/geminiRateLimit';
 import { normalizeZipCode, getZipCoordinates, getDealerLocation, computeDistanceMiles, Coordinates } from '@/lib/location';
 
 const DEFAULT_RESULT_LIMIT = 10;
@@ -42,6 +43,14 @@ export async function POST(req: Request) {
         warning: 'Server missing GEMINI_API_KEY. Showing a randomized filtered selection instead.',
       };
       return NextResponse.json(res);
+    }
+
+    if (!tryConsumeGeminiCall(clientKeyFromRequest(req))) {
+      const chosen = orderCarsForDisplay(pickTopN(fallbackBase, prefs, limit), prefs);
+      return NextResponse.json({
+        cars: decorateCarsForClient(chosen, prefs),
+        warning: 'AI matching is rate limited right now. Showing heuristic results instead.',
+      });
     }
 
     // With key: use new @google/genai client to choose the best up to 10 by ID

@@ -15,6 +15,8 @@ export type RecommendationOptions = {
   userFilter: UserFilter;
   listings: Car[];
   limit?: number;
+  /** Called before each Gemini request; returning false uses the template description. */
+  allowGeminiCall?: () => boolean;
 };
 
 export function getOrCreateUserProfile(sessionId: string): UserProfile {
@@ -82,6 +84,7 @@ export async function buildRecommendations({
   userFilter,
   listings,
   limit = DEFAULT_LIMIT,
+  allowGeminiCall,
 }: RecommendationOptions): Promise<RecommendationResult[]> {
   const normalizedFilter = sanitizeFilter(userFilter);
   const profile = getOrCreateUserProfile(sessionId);
@@ -103,6 +106,7 @@ export async function buildRecommendations({
       filter: normalizedFilter,
       profile,
       cache,
+      allowGeminiCall,
     });
     const enriched: RecommendationResult = {
       ...car,
@@ -339,14 +343,16 @@ type DescriptionParams = {
   filter: UserFilter;
   profile: UserProfile;
   cache: Map<number, string>;
+  allowGeminiCall?: () => boolean;
 };
 
-async function generateListingDescription({ listing, filter, profile, cache }: DescriptionParams): Promise<string> {
+async function generateListingDescription({ listing, filter, profile, cache, allowGeminiCall }: DescriptionParams): Promise<string> {
   const cached = cache.get(listing.Id);
   if (cached) return cached;
   let description = '';
   const apiKey = (process.env.GEMINI_API_KEY || '').trim();
-  if (apiKey) {
+  const rateLimited = Boolean(apiKey) && !(allowGeminiCall?.() ?? true);
+  if (apiKey && !rateLimited) {
     try {
       if (!genAiClient) {
         genAiClient = new GoogleGenAI({ apiKey });
@@ -359,7 +365,8 @@ async function generateListingDescription({ listing, filter, profile, cache }: D
   if (!description) {
     description = buildFallbackDescription(listing, filter, profile);
   }
-  cache.set(listing.Id, description);
+  // Don't cache a rate-limited fallback, so the card can get a Gemini blurb later.
+  if (!rateLimited) cache.set(listing.Id, description);
   return description;
 }
 

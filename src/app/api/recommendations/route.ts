@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCsvCars } from '@/data/csvCars.server';
 import { buildRecommendations } from '@/server/recommendationEngine';
+import { clientKeyFromRequest, tryConsumeGeminiCall } from '@/server/geminiRateLimit';
 import { UserFilter } from '@/lib/types';
 
 export async function POST(req: Request) {
@@ -16,7 +17,14 @@ export async function POST(req: Request) {
     }
     const limit = typeof payload.limit === 'number' ? payload.limit : undefined;
     const listings = getCsvCars();
-    const results = await buildRecommendations({ sessionId, userFilter, listings, limit });
+    const clientKey = clientKeyFromRequest(req);
+    const results = await buildRecommendations({
+      sessionId,
+      userFilter,
+      listings,
+      limit,
+      allowGeminiCall: () => tryConsumeGeminiCall(clientKey),
+    });
     return NextResponse.json({ sessionId, results });
   } catch (error) {
     console.error('recommendations POST failed', error);
