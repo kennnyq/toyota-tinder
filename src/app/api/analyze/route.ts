@@ -55,19 +55,19 @@ export async function POST(req: Request) {
       let response: GeminiResponse | null = null;
       if (typeof legacyClient.models?.generateContent === 'function') {
         response = await legacyClient.models.generateContent({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-2.5-pro',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: { temperature: 0.2, responseMimeType: 'application/json' },
         });
       } else if (typeof legacyClient.generate === 'function') {
         response = await legacyClient.generate({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-2.5-pro',
           prompt,
           temperature: 0.2,
         });
       } else if (typeof legacyClient.responses?.generate === 'function') {
         response = await legacyClient.responses.generate({
-          model: 'gemini-2.5-flash',
+          model: 'gemini-2.5-pro',
           input: prompt,
         });
       } else {
@@ -164,16 +164,28 @@ function buildPrompt(prefs: Preferences, cars: Car[], totalMatches: number, note
   const csv = carsToCsv(cars);
   const shown = Math.min(cars.length, PROMPT_ROW_LIMIT);
   const guardrails = formatGuardrailLines(prefs);
-  const notes = prefs.notes?.trim() ? prefs.notes.trim() : 'No additional notes provided.';
+  const extraDetails = prefs.notes?.trim();
+  const extraDetailsText = extraDetails ? extraDetails : 'No extra details were provided.';
+  const criticalRules = [
+    'Critical rule hierarchy (never violate):',
+    '1. Treat the "Extra details" block as hard constraints. If a listing conflicts with any statement (or you are unsure), leave it out.',
+    '2. Apply the structured guardrails and derived constraints next.',
+    '3. Only choose listings surfaced in the CSV subset and answer with strict JSON.',
+  ].join('\n');
+  const failureInstruction = 'If none of the CSV rows satisfy the extra details, respond with {"ids":[],"descriptions":{},"reasoning":"Explain which requirement could not be met."} and do NOT improvise vehicles.';
   return [
-    `You are a Toyota inventory matchmaker. Analyze the CSV data below and choose up to ${limit} listings that best satisfy the user preferences and chat notes.`,
-    'Respect these structured guardrails before applying your own desirability ranking:',
-    guardrails,
+    `You are a Toyota inventory matchmaker. Analyze the CSV data below and choose up to ${limit} listings that best satisfy the user preferences.`,
+    criticalRules,
+    '',
+    'Extra details (verbatim, highest priority):',
+    extraDetailsText,
     `Derived note constraints: ${noteSummary}`,
-    `User chat notes to reference when writing descriptions: ${notes}`,
+    'Structured guardrails:',
+    guardrails,
     'User preferences (JSON):',
     JSON.stringify(prefs),
     `Only pick Ids that exist in the CSV rows (showing ${shown} of ${totalMatches} matching records).`,
+    failureInstruction,
     `Respond with strict JSON (max ${limit} ids): {"ids":[<Id numbers>],"descriptions":{"<Id>":"1-2 sentence reason referencing user notes"},"reasoning":"concise summary"}`,
     '',
     'CSV:',
