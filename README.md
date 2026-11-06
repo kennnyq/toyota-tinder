@@ -4,6 +4,14 @@ AI ranked Toyota matchmaker with swipe style discovery for Hackathon 2025.
 
 ToyotaTinder lets shoppers enter budget and lifestyle preferences, then uses a Toyota inventory CSV plus Google Gemini 2.5 Flash to surface best fit cars for swiping, saving, and revisiting.
 
+**[Live site](https://www.toyotatinder.us)** · **[Demo video](https://www.youtube.com/watch?v=6Khe4kaXSIQ)** · **[Devpost](https://devpost.com/software/toyotatinder)**
+
+| Landing | Preferences |
+| --- | --- |
+| ![Landing page with Start Matching call to action](docs/screenshots/home.png) | ![Preference form with price range and free-text notes](docs/screenshots/find.png) |
+| **Swipe deck** | **Compare** |
+| ![Swipe card for a 2025 Highlander Hybrid with Skip and Like buttons](docs/screenshots/swipe.png) | ![Side-by-side comparison of two liked Toyotas](docs/screenshots/compare.png) |
+
 ---
 
 ### Features
